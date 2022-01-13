@@ -1,3 +1,6 @@
+#header_line 1: mpirun -np 2 --map-by node --report-bindings ./IMB-MPI1 PingPong -msglog 28 2>/dev/null 
+#header_line 2: 
+#header_line 3: latency 2.15e-6, bandwidth 12160
 bytes,repetitions,time,bandwidth
 0,1000,1.37,0.00
 1,1000,1.36,0.74

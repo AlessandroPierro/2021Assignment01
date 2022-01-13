@@ -1,3 +1,6 @@
+#header_line 1: mpirun -np 2 --mca pml ob1 --mca btl tcp,self --map-by node --report-bindings ./IMB-MPI1 PingPong -msglog 28 2>/dev/null 
+#header_line 2: 
+#header_line 3:  latency 23.15e-6, bandwidth 1890
 bytes,repetitions,time,bandwidth,time[predicted]
 0,1000,15.94,0.0,23.15
 1,1000,15.98,0.06,23.1505291005291

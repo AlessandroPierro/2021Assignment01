@@ -1,3 +1,6 @@
+#header_line 1: mpirun -np 2 --map-by socket ./IMB-MPI1 PingPong -msglog 28 2>/dev/null 
+#header_line 2: 
+#header_line 3:  latency 0.67e-6, bandwidth 5490
 bytes,repetitions,time,bandwidth,time[predicted]
 0,1000,0.43,0.0,0.67
 1,1000,0.43,2.32,0.6701821493624772
