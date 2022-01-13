@@ -39,51 +39,49 @@ int main(int argc, char *argv[])
     int coord[3];
     MPI_Cart_coords(MPI_GRID_WORLD, rank, 3, coord);
 
+
+    // ---- Allocate memory for the matrix ---- //
+    double *A = (double *)malloc(padded_dimension * sizeof(double));
+    double *B = (double *)malloc(padded_dimension * sizeof(double));
+
+    // ---- Initialize A and B with random double ---- //
+    srand(rank);
+    for (int i = 0; i < total_dimension; i++)
+    {
+        A[i] = (double)rand() / (double)RAND_MAX;
+        B[i] = (double)rand() / (double)RAND_MAX;
+    }
+
+    // ---- Check if padding is needed ---- //
+    int local_dimension = padded_dimension / size;
+
+    // ---- Allocate memory for local matrices ---- //
+    double *A_1d = (double *)malloc(local_dimension * sizeof(double));
+    double *B_1d = (double *)malloc(local_dimension * sizeof(double));
+    
+    // ---- Scatter A and B ---- //
+    MPI_Scatter(A, local_dimension, MPI_DOUBLE, A_1d, local_dimension, MPI_DOUBLE, 0, MPI_GRID_WORLD);
+    MPI_Scatter(B, local_dimension, MPI_DOUBLE, B_1d, local_dimension, MPI_DOUBLE, 0, MPI_GRID_WORLD);
+
     // ---- Get time from MPI_Wtime --- //
     start_time = MPI_Wtime();
 
-    for (int i = 0; i < n_iterations; i++)
+    // ---- Compute the sum of the local matrices ---- //
+    for (int i = 0; i < local_dimension; i++)
     {
-        // ---- Allocate memory for the matrix ---- //
-        double *A = (double *)malloc(padded_dimension * sizeof(double));
-        double *B = (double *)malloc(padded_dimension * sizeof(double));
-
-        // ---- Initialize A and B with random double ---- //
-        srand(rank * i);
-        for (int i = 0; i < total_dimension; i++)
-        {
-            A[i] = (double)rand() / (double)RAND_MAX;
-            B[i] = (double)rand() / (double)RAND_MAX;
-        }
-
-        // ---- Check if padding is needed ---- //
-        int local_dimension = padded_dimension / size;
-
-        // ---- Allocate memory for local matrices ---- //
-        double *A_1d = (double *)malloc(local_dimension * sizeof(double));
-        double *B_1d = (double *)malloc(local_dimension * sizeof(double));
-
-        // ---- Scatter A and B ---- //
-        MPI_Scatter(A, local_dimension, MPI_DOUBLE, A_1d, local_dimension, MPI_DOUBLE, 0, MPI_GRID_WORLD);
-        MPI_Scatter(B, local_dimension, MPI_DOUBLE, B_1d, local_dimension, MPI_DOUBLE, 0, MPI_GRID_WORLD);
-
-        // ---- Compute the sum of the local matrices ---- //
-        for (int i = 0; i < local_dimension; i++)
-        {
-            B_1d[i] = A_1d[i] + B_1d[i];
-        }
-
-        // ---- Gather local matrices ---- //
-        MPI_Gather(A_1d, local_dimension, MPI_DOUBLE, A, local_dimension, MPI_DOUBLE, 0, MPI_GRID_WORLD);
+        B_1d[i] = A_1d[i] + B_1d[i];
     }
-
+    
     // ---- Get time from MPI_Wtime --- //
     end_time = MPI_Wtime();
+
+    // ---- Gather local matrices ---- //
+    MPI_Gather(A_1d, local_dimension, MPI_DOUBLE, A, local_dimension, MPI_DOUBLE, 0, MPI_GRID_WORLD);
 
     // ---- Print time on processor 0 ---- //
     if (rank == 0)
     {
-        printf("Time: %f\n", (end_time - start_time) / n_iterations);
+        printf("%d,%d,%f\n", size, n_x*n_y*n_z, end_time - start_time);
     }
 
     MPI_Finalize();
